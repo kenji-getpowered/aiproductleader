@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Testing Application</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        button {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Code Testing Application</h1>
+  <p>INPUT: This "HTML + JAVASCRIPT" application propose help the user testing possibilities among a list code, for opening a locked for instance. We have a set of codes from "00" to "99". the user can ask the application to propose randomly a code among those possibilities, the user then can validate if the proposed code was ok or not. If the code is valid then the program must say "Success" else the programm must remove the proposed code from the possibilities and allows the user to ask for a new code. This application must save in memory the list of tested code and the codes that have not been tested yet, so that even if I close the page the list is saved and automatically restored</p>
+<p>CONCLUSION: Worked perfectly"</p>
+<p id="instructions">Press the button to get a new code suggestion.</p>
+<button id="getCodeBtn">Get Code</button>
+
+<div id="codeDisplay" style="margin-top: 20px; font-size: 1.5em;"></div>
+<button id="validateBtn" style="display: none;">Validate</button>
+<button id="rejectBtn" style="display: none;">Reject</button>
+
+<div id="message"></div>
+
+<script>
+    let codes = [];
+    let testedCodes = [];
+
+    function loadFromStorage() {
+        const storedCodes = localStorage.getItem('codes');
+        const storedTestedCodes = localStorage.getItem('testedCodes');
+        if (storedCodes && storedTestedCodes) {
+            codes = JSON.parse(storedCodes);
+            testedCodes = JSON.parse(storedTestedCodes);
+        } else {
+            for (let i = 0; i < 100; i++) {
+                codes.push(i.toString().padStart(2, '0'));
+            }
+        }
+    }
+
+    function saveToStorage() {
+        localStorage.setItem('codes', JSON.stringify(codes));
+        localStorage.setItem('testedCodes', JSON.stringify(testedCodes));
+    }
+
+    function proposeCode() {
+        if (codes.length === 0) {
+            document.getElementById('message').textContent = "No more codes to test.";
+            return;
+        }
+
+        let randomIndex = Math.floor(Math.random() * codes.length);
+        let proposedCode = codes[randomIndex];
+        
+        document.getElementById('codeDisplay').textContent = `Proposed Code: ${proposedCode}`;
+        document.getElementById('validateBtn').style.display = 'inline';
+        document.getElementById('rejectBtn').style.display = 'inline';
+    }
+
+    function validateCode() {
+        let code = document.getElementById('codeDisplay').textContent.replace('Proposed Code: ', '');
+        document.getElementById('message').textContent = `Success! The code ${code} is correct.`;
+        resetDisplay();
+    }
+
+    function rejectCode() {
+        let code = document.getElementById('codeDisplay').textContent.replace('Proposed Code: ', '');
+        testedCodes.push(code);
+        codes = codes.filter(c => c !== code);
+        document.getElementById('message').textContent = `The code ${code} was incorrect. ${codes.length} codes remaining.`;
+        saveToStorage();
+        resetDisplay();
+    }
+
+    function resetDisplay() {
+        document.getElementById('codeDisplay').textContent = '';
+        document.getElementById('validateBtn').style.display = 'none';
+        document.getElementById('rejectBtn').style.display = 'none';
+    }
+
+    document.getElementById('getCodeBtn').addEventListener('click', proposeCode);
+    document.getElementById('validateBtn').addEventListener('click', validateCode);
+    document.getElementById('rejectBtn').addEventListener('click', rejectCode);
+
+    loadFromStorage();
+</script>
